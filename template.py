@@ -5,7 +5,7 @@ import logging
 # logging string
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s]: %(message)s:')
 
-project_name = 'badminton-pose-coach'
+project_name = 'badmintonPoseCoach'
 
 list_of_files = [
     ".github/workflows/.gitkeep",

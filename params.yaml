@@ -1,0 +1,4 @@
+data_ingestion:
+  keypoint_extraction_model: yolo11n-pose.pt
+  fps: 15
+  conf: 0.5
