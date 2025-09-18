@@ -5,3 +5,8 @@ data_ingestion:
   source_URL: https://drive.google.com/uc?id=1KW5Q8Hd8-J75FdnehMjHw1WvdXDv1UxB
   raw_data_path: data/VideoBadminton_Dataset/VideoBadminton_Dataset
   processed_data_path: artifacts/data_ingestion
+
+prepare_base_model:
+  root_dir: artifacts/prepare_base_model
+  updated_base_model_path: artifacts/prepare_base_model/updated_model.pt
+

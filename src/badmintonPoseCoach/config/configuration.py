@@ -27,3 +27,32 @@ class ConfigurationManager:
             params_keypoint_extraction_model = params.keypoint_extraction_model,
         )
         return data_ingestion_config
+
+    def get_prepare_base_model_config(self) -> PrepareBaseModelConfig:
+        config = self.config.prepare_base_model
+        params = self.params.prepare_base_model
+
+        create_directories([config.root_dir])
+
+        prepare_base_model_config = PrepareBaseModelConfig(
+            root_dir=Path(config.root_dir),
+            updated_base_model_path=Path(config.updated_base_model_path),
+            params_model_name=params.model_name,
+        )
+        return prepare_base_model_config
+
+    def get_model_config(self) -> ModelConfig:
+        params = None
+        if self.params.prepare_base_model.model_name == "gru":
+            params = self.params.prepare_base_model.gru
+        model_config = ModelConfig(
+            params_hidden=params.hidden,
+            params_model_name=params.model_name,
+            params_num_classes=params.num_classes,
+            params_layers=params.layers,
+            params_dropout=params.dropout,
+            params_num_joints=params.num_joints,
+            params_channel=params.channel,
+            params_bidirectional=params.bidirectional,
+        )
+        return model_config
