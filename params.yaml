@@ -14,3 +14,7 @@ prepare_base_model:
     num_joints: 17
     channel: 2
     bidirectional: True
+
+training:
+  epochs: 10
+  batch_size: 16

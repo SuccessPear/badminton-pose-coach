@@ -56,3 +56,20 @@ class ConfigurationManager:
             params_bidirectional=params.bidirectional,
         )
         return model_config
+
+    def get_training_config(self) -> TrainingConfig:
+        prepare_base_model_config = self.config.prepare_base_model
+        training_config = self.config.training
+        params = self.params.training
+
+        create_directories([training_config.root_dir])
+
+        training_config = TrainingConfig(
+            root_dir=Path(training_config.root_dir),
+            trained_model_path=Path(training_config.trained_model_path),
+            updated_base_model_path=Path(prepare_base_model_config.updated_base_model_path),
+            training_data=Path(training_config.training_data),
+            params_epochs=params.epochs,
+            params_batch_size=params.batch_size,
+        )
+        return training_config
