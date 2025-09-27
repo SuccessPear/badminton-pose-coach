@@ -1,20 +1,25 @@
 data_ingestion:
   keypoint_extraction_model: yolo11n-pose.pt
   fps: 15
-  conf: 0.5
+  conf: 0.25
 
 prepare_base_model:
   model_name: gru
   gru:
     model_name: gru
-    num_classes: 15
+    num_classes: 18
     hidden: 128
     layers: 2
     dropout: 0.3
     num_joints: 17
-    channel: 2
+    channel: 3
     bidirectional: True
 
 training:
-  epochs: 10
+  epochs: 1
   batch_size: 16
+  device: cpu
+  lr: 0.001
+  step_size: 10
+  gamma: 0.1
+  use_amp: True

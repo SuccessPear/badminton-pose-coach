@@ -4,6 +4,7 @@ import os, json, pathlib
 from typing import Iterable
 from badmintonPoseCoach.utils.common import get_size, extract_keypoints_from_video, is_video_readable
 from badmintonPoseCoach.entity.config_entity import DataIngestionConfig
+import torch
 
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
@@ -15,7 +16,6 @@ class DataIngestion:
             for fn in filenames:
                 if fn.lower().endswith("mp4"):
                     yield os.path.join(dirpath, fn)
-
 
     def mirror_and_save_json(self):
         """
@@ -36,8 +36,9 @@ class DataIngestion:
 
             # Skip if already extracted
             if os.path.exists(out_json_path):
-                logger.info(f"[SKIP] Exists: {out_json_path}")
+                print(f"[SKIP] Exists: {out_json_path}")
                 continue
+
             if not is_video_readable(vp):
                 logger.info(f"[SKIP] Can't read: {rel}")
                 continue
@@ -49,6 +50,9 @@ class DataIngestion:
                 fps_sample=self.config.params_fps,
                 conf=self.config.params_conf,
             )
+            data["seq"] = self.clean_data(data["seq"])
+            if data["seq"] is None:
+                continue
 
             # Attach label from parent directory name (class folder)
             label = pathlib.Path(rel_no_ext).parts[0]  # first folder under input_root
@@ -58,6 +62,17 @@ class DataIngestion:
             with open(out_json_path, "w", encoding="utf-8") as f:
                 json.dump(data, f)
 
+    @staticmethod
+    def clean_data(seq):
+        valid_frames = []
+        for i in range(len(seq)):
+            if torch.isfinite(torch.tensor(seq[i])).all():
+                valid_frames.append(i)
+
+        if len(valid_frames) < int(len(seq)*0.6):
+            return None
+
+        return [seq[i] for i in valid_frames]
 
 
 
