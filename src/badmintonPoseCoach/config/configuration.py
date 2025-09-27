@@ -69,7 +69,13 @@ class ConfigurationManager:
             trained_model_path=Path(training_config.trained_model_path),
             updated_base_model_path=Path(prepare_base_model_config.updated_base_model_path),
             training_data=Path(training_config.training_data),
+            checkpoint_dir=Path(training_config.checkpoint_dir),
             params_epochs=params.epochs,
             params_batch_size=params.batch_size,
+            params_device=params.device,
+            params_step_size=params.step_size,
+            params_lr=params.lr,
+            params_gamma=params.gamma,
+            params_use_amp=params.use_amp,
         )
         return training_config

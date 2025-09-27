@@ -32,5 +32,11 @@ class TrainingConfig:
     trained_model_path: Path
     updated_base_model_path: Path
     training_data: Path
+    checkpoint_dir: Path
     params_epochs: int
     params_batch_size: int
+    params_device: str
+    params_lr: float
+    params_step_size: int
+    params_gamma: float
+    params_use_amp: bool

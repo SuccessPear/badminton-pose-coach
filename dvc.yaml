@@ -28,20 +28,23 @@ stages:
     outs:
       - artifacts/prepare_base_model
 
-#  training:
-#    cmd: python src/cnnClassifier/pipeline/stage_03_model_training.py
-#    deps:
-#      - src/cnnClassifier/pipeline/stage_03_model_training.py
-#      - config/config.yaml
-#      - artifacts/data_ingestion/kidney-ct-scan-image
-#      - artifacts/prepare_base_model
-#    params:
-#      - EPOCHS
-#      - BATCH_SIZE
-#      - AUGMENTATION
-#      - IMAGE_SIZE
-#    outs:
-#      - artifacts/training/model.h5
+  training:
+    cmd: python src/badmintonPoseCoach/pipeline/stage_03_model_training.py
+    deps:
+      - src/badmintonPoseCoach/pipeline/stage_03_model_training.py
+      - config/config.yaml
+      - artifacts/data_ingestion
+      - artifacts/prepare_base_model
+    params:
+      - training.epochs
+      - training.batch_size
+      - training.device
+      - training.lr
+      - training.step_size
+      - training.gamma
+      - training.use_amp
+    outs:
+      - artifacts/training/checkpoints/best.pkl
 #
 #  evaluation:
 #    cmd: python src/cnnClassifier/pipeline/stage_04_model_evaluation.py

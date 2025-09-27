@@ -16,4 +16,4 @@ class PrepareBaseModel:
 
     @staticmethod
     def save_model(path, model):
-        torch.save(model.state_dict(), path)
+        torch.save(model, path)

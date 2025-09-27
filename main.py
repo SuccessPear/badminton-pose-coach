@@ -1,6 +1,7 @@
 from badmintonPoseCoach import logger
 from badmintonPoseCoach.pipeline.stage_01_data_ingestion import DataIngestionTrainingPipeline
 from badmintonPoseCoach.pipeline.stage_02_prepare_base_model import PrepareBaseModelPipeline
+from badmintonPoseCoach.pipeline.stage_03_model_training import TrainingModelPipeline
 
 import multiprocessing as mp
 import platform
@@ -18,6 +19,7 @@ def run_stage(stage_name: str, PipelineCls):
 def main():
     run_stage("Data Ingestion", DataIngestionTrainingPipeline)
     run_stage("Prepare Base Model", PrepareBaseModelPipeline)
+    run_stage("Training Model", TrainingModelPipeline)
 
 if __name__ == "__main__":
     mp.freeze_support()

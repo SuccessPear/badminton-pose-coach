@@ -1,0 +1,86 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/badmintonPoseCoach/pipeline/stage_01_data_ingestion.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 039bf6385acdcd0c7502738a6f2b7a47
+      size: 689
+    - path: src/badmintonPoseCoach/pipeline/stage_01_data_ingestion.py
+      hash: md5
+      md5: 601a0b8685c7445ad98d6a1427e09817
+      size: 888
+    params:
+      params.yaml:
+        data_ingestion.conf: 0.25
+        data_ingestion.fps: 15
+        data_ingestion.keypoint_extraction_model: yolo11n-pose.pt
+    outs:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: bdde7f1ca0e37ab43f0a442558ee0e2b.dir
+      size: 132964329
+      nfiles: 7790
+  prepare_base_model:
+    cmd: python src/badmintonPoseCoach/pipeline/stage_02_prepare_base_model.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 039bf6385acdcd0c7502738a6f2b7a47
+      size: 689
+    - path: src/badmintonPoseCoach/pipeline/stage_02_prepare_base_model.py
+      hash: md5
+      md5: e6b07f410f2446588b3bbed7231e05ec
+      size: 970
+    params:
+      params.yaml:
+        prepare_base_model.gru.bidirectional: true
+        prepare_base_model.gru.channel: 3
+        prepare_base_model.gru.dropout: 0.3
+        prepare_base_model.gru.hidden: 128
+        prepare_base_model.gru.layers: 2
+        prepare_base_model.gru.model_name: gru
+        prepare_base_model.gru.num_classes: 18
+        prepare_base_model.gru.num_joints: 17
+    outs:
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 10a082912bffd3338e8e12c3d2769383.dir
+      size: 1772085
+      nfiles: 1
+  training:
+    cmd: python src/badmintonPoseCoach/pipeline/stage_03_model_training.py
+    deps:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: bdde7f1ca0e37ab43f0a442558ee0e2b.dir
+      size: 132964329
+      nfiles: 7790
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 10a082912bffd3338e8e12c3d2769383.dir
+      size: 1772085
+      nfiles: 1
+    - path: config/config.yaml
+      hash: md5
+      md5: 039bf6385acdcd0c7502738a6f2b7a47
+      size: 689
+    - path: src/badmintonPoseCoach/pipeline/stage_03_model_training.py
+      hash: md5
+      md5: 9d5a9f12b6a1d944af6df2a8adc229b9
+      size: 1704
+    params:
+      params.yaml:
+        training.batch_size: 16
+        training.device: cuda
+        training.epochs: 2
+        training.gamma: 0.1
+        training.lr: 0.001
+        training.step_size: 10
+        training.use_amp: true
+    outs:
+    - path: artifacts/training/checkpoints/best.pkl
+      hash: md5
+      md5: 9b1e167f2fa036e9852b8139d8a432b7
+      size: 1766840

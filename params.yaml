@@ -16,9 +16,9 @@ prepare_base_model:
     bidirectional: True
 
 training:
-  epochs: 1
+  epochs: 2
   batch_size: 16
-  device: cpu
+  device: cuda
   lr: 0.001
   step_size: 10
   gamma: 0.1

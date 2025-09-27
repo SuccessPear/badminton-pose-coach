@@ -72,7 +72,7 @@ class BadmintonPoseDataset(Dataset):
 
         pose = self._to_tensor_TxKx3(seq)
 
-        return pose, label
+        return self.normalize_pose(pose, 720, 1280), label
 
     def _to_tensor_TxKx3(self, seq: any) -> torch.tensor:
         if self.frame_format in ("auto", "Kx3") and isinstance(seq, list) and len(seq) > 0 and isinstance(seq[0], list):
@@ -101,3 +101,19 @@ class BadmintonPoseDataset(Dataset):
             return torch.tensor(seq, dtype=torch.float32).view(T, K, 3)
 
         raise ValueError("Unsupported 'seq' structure")
+
+    @staticmethod
+    def normalize_pose(pose, W, H, method="skeleton"):
+        # pose: (T,K,3)
+        if method == "image":
+            pose[...,0] /= W
+            pose[...,1] /= H
+        elif method == "skeleton":
+            # pelvis = joint 11,12 in average
+            pelvis = pose[:,[11,12],:2].mean(1, keepdims=True)
+            pose[...,:2] -= pelvis
+            # scale with the shoulder
+            shoulder = pose[:,[5,6],:2].mean(1, keepdims=True)
+            scale = (pose[:,5,:2]-pose[:,6,:2]).norm(dim=-1, keepdim=True).clamp(min=1e-6)
+            pose[...,:2] /= scale[:,None,:]
+        return pose

@@ -2,7 +2,7 @@ from badmintonPoseCoach.config.configuration import ConfigurationManager
 from badmintonPoseCoach.components.prepare_base_model import PrepareBaseModel
 from badmintonPoseCoach import logger
 
-STAGE_NAME = "Data ingestion stage"
+STAGE_NAME = "Prepare base model stage"
 
 
 class PrepareBaseModelPipeline:
