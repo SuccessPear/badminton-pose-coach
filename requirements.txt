@@ -1,3 +1,6 @@
+#download dataset
+kagglehub
+
 # Core deep learning
 torch>=2.2.0
 torchvision>=0.17.0
