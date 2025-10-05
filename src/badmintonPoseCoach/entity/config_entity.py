@@ -3,6 +3,12 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
+    root_dir: Path
+    data_url: Path
+    target_path: Path
+
+@dataclass(frozen=True)
+class DatasetPreprocessingConfig:
     raw_data_path: Path
     processed_data_path: Path
     params_fps: int

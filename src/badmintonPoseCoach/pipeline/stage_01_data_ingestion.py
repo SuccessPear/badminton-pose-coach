@@ -13,7 +13,7 @@ class DataIngestionTrainingPipeline:
         config = ConfigurationManager()
         data_ingestion_config = config.get_data_ingestion_config()
         data_ingestion = DataIngestion(data_ingestion_config)
-        data_ingestion.mirror_and_save_json()
+        data_ingestion.download_file()
 
 
 if __name__ == '__main__':

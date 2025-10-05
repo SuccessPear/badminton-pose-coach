@@ -1,6 +1,11 @@
 artifacts_root: artifacts
 
 data_ingestion:
+  root_dir: data/
+  data_url: shenhuichang/badminton-storke-video
+  target_path: data/Badminton_Strorke_Video/
+
+dataset_preprocessing:
   root_dir: artifacts/data_ingestion
   source_URL: https://drive.google.com/uc?id=1KW5Q8Hd8-J75FdnehMjHw1WvdXDv1UxB
   raw_data_path: data/VideoBadminton_Dataset/VideoBadminton_Dataset

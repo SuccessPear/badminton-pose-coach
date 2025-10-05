@@ -5,10 +5,40 @@ from typing import Iterable
 from badmintonPoseCoach.utils.common import get_size, extract_keypoints_from_video, is_video_readable
 from badmintonPoseCoach.entity.config_entity import DataIngestionConfig
 import torch
+import kagglehub
+import shutil
+from pathlib import Path
 
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
         self.config = config
+
+    def download_file(self) -> str:
+        '''
+        Download data from kaggle
+        :return:
+        '''
+        # Download latest version
+        try:
+            cache_path = Path(kagglehub.dataset_download(self.config.data_url))
+
+            print("Cached path to dataset files:", cache_path)
+        except Exception as e:
+            raise e
+
+        target = Path(self.config.target_path)
+        if target.exists():
+            if any(target.iterdir()):  # if the target folder contain file then skip
+                logger.info(f"Data has already been downloaded in {target}, skipping.")
+                return target
+            else:
+                logger.info(f"{target} is empty, data will be downloaded.")
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+
+        shutil.copytree(cache_path, target, dirs_exist_ok=True)
+        logger.info(f"Dataset available at {target}")
+        return target
 
     def iter_videos(self, root: str) -> Iterable[str]:
         """Yield all video file paths under root recursively."""

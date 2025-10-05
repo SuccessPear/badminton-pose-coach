@@ -15,11 +15,22 @@ class ConfigurationManager:
 
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         config = self.config.data_ingestion
-        params = self.params.data_ingestion
 
         create_directories([config.root_dir])
 
         data_ingestion_config = DataIngestionConfig(
+            root_dir=config.root_dir,
+            data_url=config.data_url,
+            target_path=config.target_path,
+        )
+        return data_ingestion_config
+    def get_data_preprocessing_config(self) -> DatasetPreprocessingConfig:
+        config = self.config.data_ingestion
+        params = self.params.data_ingestion
+
+        create_directories([config.root_dir])
+
+        data_ingestion_config = DatasetPreprocessingConfig(
             raw_data_path = Path(config.raw_data_path),
             processed_data_path = Path(config.processed_data_path),
             params_fps = params.fps,
