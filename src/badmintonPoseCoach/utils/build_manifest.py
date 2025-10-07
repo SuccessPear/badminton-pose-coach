@@ -4,8 +4,8 @@ import random
 
 
 def build_manifest(
-    root_dir: str = "data/Badminton_Strorke_Video",
-    out_path: str = "data/Badminton_Strorke_Video/manifest.json",
+    root_dir: Path,
+    out_path: Path,
     train_ratio: float = 0.8,
     val_ratio: float = 0.1,
     shuffle: bool = True,

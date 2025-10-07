@@ -4,12 +4,13 @@ data_ingestion:
   root_dir: data/
   data_url: shenhuichang/badminton-storke-video
   target_path: data/Badminton_Strorke_Video/
+  manifest_path: data/Badminton_Strorke_Video/manifest.json
 
 dataset_preprocessing:
   root_dir: artifacts/data_ingestion
-  source_URL: https://drive.google.com/uc?id=1KW5Q8Hd8-J75FdnehMjHw1WvdXDv1UxB
-  raw_data_path: data/VideoBadminton_Dataset/VideoBadminton_Dataset
-  processed_data_path: artifacts/data_ingestion
+  model_name: yolo11n-pose.pt
+  manifest_path: data/Badminton_Strorke_Video/manifest.json
+  overlay_subdir: overlay_subdir
 
 prepare_base_model:
   root_dir: artifacts/prepare_base_model

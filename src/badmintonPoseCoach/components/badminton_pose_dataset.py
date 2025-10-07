@@ -3,6 +3,8 @@ from torch.utils.data import Dataset, DataLoader
 import torch
 import json
 from badmintonPoseCoach.entity.config_entity import TrainingConfig
+import numpy as np
+import os
 
 class BadmintonPoseDataset(Dataset):
     """
@@ -12,67 +14,45 @@ class BadmintonPoseDataset(Dataset):
                  config: TrainingConfig,
                  seed: int = 42,
                  split: str = 'train',
-                 split_ratio: tuple[float, float, float] = (0.8, 0.1, 0.1),
                  frame_format: str = 'auto',
                  num_joints: int = 17,):
+        self.config = config
         self.training_data = Path(config.training_data)
-        self.frame_format = frame_format
         self.num_joints = num_joints
+        self.split = split
+        self.frame_format = frame_format
+        self.split_dir = self.config.training_data / self.split
 
-        class_dirs = sorted([d for d in self.training_data.iterdir() if d.is_dir()])
-        self.class_names = [d.name for d in class_dirs]
-
+        self.classes, self.label_to_id = self._discover_classes()
         # list all files in data folder
-        self.file_list = []
-        for ci, d in enumerate(class_dirs):
-            for p in sorted(d.rglob("*.json")):
-                self.file_list.append((p, ci))
-
-        # Train/val/test split
-        g = torch.Generator().manual_seed(seed)
-        per_class_idx = [[] for _ in self.class_names]
-        for idx, (_p, ci) in enumerate(self.file_list):
-            per_class_idx[ci].append(idx)
-        for lst in per_class_idx:
-            perm = torch.randperm(len(lst), generator=g).tolist()
-            lst = [lst[i] for i in perm]
-
-        def take_splits(idxs: list[int]) -> tuple[list[int], list[int], list[int]]:
-            n = len(idxs)
-            n_train = int(n * split_ratio[0])
-            n_val = int(n * split_ratio[1])
-            return idxs[:n_train], idxs[n_train:n_train+n_val], idxs[n_train+n_val:]
-
-        split_map = {"train": 0, "val": 1, "valid": 1, "validation": 1, "test": 2}
-        which = split_map[split]
-
-        selected: list[int] = []
-        for lst in per_class_idx:
-            tr, va, te = take_splits(lst)
-            selected.extend([tr, va, te][which])
-        selected = sorted(selected)
-
-        self.files: list[Path] = [self.file_list[i][0] for i in selected]
-        self.labels: list[int] = [self.file_list[i][1] for i in selected]
-
-
+        self.files = [self.split_dir / file for file in os.listdir(self.split_dir)]
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, index: int) -> tuple[torch.FloatTensor, int]:
         path = self.files[index]
-        label = self.labels[index]
-        with open(path, "r", encoding="utf-8") as f:
-            obj = json.load(f)
 
-        seq = obj.get("seq")
+        data = np.load(path)
+        meta = json.loads(str(data["meta_json"]))
+        label = meta.get("label")
+        seq = data.get("kpts")
+
         if seq is None:
-            raise ValueError(f"Missing 'seq' in {path}")
+            raise ValueError(f"Missing 'kpts' in {path}")
 
-        pose = self._to_tensor_TxKx3(seq)
+        pose = self._to_tensor_TxKx3(seq.tolist())
 
-        return self.normalize_pose(pose, 720, 1280), label
+        return self.normalize_pose(pose, 720, 1280), self.label_to_id[label]
+
+    def _discover_classes(self):
+        labels = set()
+        for p in self.split_dir.glob("*.npz"):
+            z = np.load(p, allow_pickle=False)
+            meta = json.loads(str(z["meta_json"]))
+            labels.add(meta.get("label"))
+        classes = sorted(labels)
+        return classes, {c: i for i, c in enumerate(classes)}
 
     def _to_tensor_TxKx3(self, seq: any) -> torch.tensor:
         if self.frame_format in ("auto", "Kx3") and isinstance(seq, list) and len(seq) > 0 and isinstance(seq[0], list):

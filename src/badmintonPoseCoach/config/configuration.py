@@ -22,22 +22,43 @@ class ConfigurationManager:
             root_dir=config.root_dir,
             data_url=config.data_url,
             target_path=config.target_path,
+            manifest_path=config.manifest_path,
         )
         return data_ingestion_config
-    def get_data_preprocessing_config(self) -> DatasetPreprocessingConfig:
-        config = self.config.data_ingestion
-        params = self.params.data_ingestion
+
+    def get_dataset_preprocessing_config(self) -> DatasetPreprocessingConfig:
+        config = self.config.dataset_preprocessing
+        params = self.params.dataset_preprocessing
 
         create_directories([config.root_dir])
 
-        data_ingestion_config = DatasetPreprocessingConfig(
-            raw_data_path = Path(config.raw_data_path),
-            processed_data_path = Path(config.processed_data_path),
+        dataset_preprocessing_config = DatasetPreprocessingConfig(
+            root_dir = Path(config.root_dir),
+            model_name = config.model_name,
+            manifest_path = Path(config.manifest_path),
+            overlay_subdir = Path(config.overlay_subdir),
             params_fps = params.fps,
             params_conf = params.conf,
-            params_keypoint_extraction_model = params.keypoint_extraction_model,
+            params_iou = params.iou,
+            params_imgsz = params.imgsz,
+            params_maxdet = params.maxdet,
+            params_valid_ratio_start = params.valid_ratio_start,
+            params_valid_ratio_end = params.valid_ratio_end,
+            params_crop_l = params.crop_l,
+            params_crop_r = params.crop_r,
+            params_crop_t = params.crop_t,
+            params_crop_b = params.crop_b,
+            params_presence_in_roi_min = params.presence_in_roi_min,
+            params_kpt_thr = params.kpt_thr,
+            params_ema_alpha = params.ema_alpha,
+            params_idle_active_thr = params.idle_active_thr,
+            params_idle_mean_speed_thr = params.idle_mean_speed_thr,
+            params_win_len = params.win_len,
+            params_win_stride = params.win_stride,
+            params_save_overlay= params.save_overlay,
+            params_max_nan_frame_ratio = params.max_nan_frame_ratio,
         )
-        return data_ingestion_config
+        return dataset_preprocessing_config
 
     def get_prepare_base_model_config(self) -> PrepareBaseModelConfig:
         config = self.config.prepare_base_model

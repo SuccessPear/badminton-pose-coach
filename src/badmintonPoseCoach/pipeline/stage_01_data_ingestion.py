@@ -15,7 +15,8 @@ class DataIngestionTrainingPipeline:
         data_ingestion_config = config.get_data_ingestion_config()
         data_ingestion = DataIngestion(data_ingestion_config)
         data_ingestion.download_file()
-        build_manifest()
+        build_manifest(root_dir=data_ingestion_config.target_path,
+                       out_path=data_ingestion_config.manifest_path)
 
 if __name__ == '__main__':
     try:

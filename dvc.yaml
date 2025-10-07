@@ -4,12 +4,39 @@ stages:
     deps:
       - src/badmintonPoseCoach/pipeline/stage_01_data_ingestion.py
       - config/config.yaml
+    outs:
+      - data/Badminton_Strorke_Video
+
+  dataset_preprocessing:
+    cmd: python src/badmintonPoseCoach/pipeline/stage_02_dataset_preprocessing.py
+    deps:
+      - src/badmintonPoseCoach/pipeline/stage_02_dataset_preprocessing.py
+      - config/config.yaml
+      - data/Badminton_Strorke_Video
     params:
-      - data_ingestion.keypoint_extraction_model
-      - data_ingestion.fps
-      - data_ingestion.conf
+      - dataset_preprocessing.fps
+      - dataset_preprocessing.conf
+      - dataset_preprocessing.iou
+      - dataset_preprocessing.imgsz
+      - dataset_preprocessing.maxdet
+      - dataset_preprocessing.valid_ratio_start
+      - dataset_preprocessing.valid_ratio_end
+      - dataset_preprocessing.crop_l
+      - dataset_preprocessing.crop_r
+      - dataset_preprocessing.crop_t
+      - dataset_preprocessing.crop_b
+      - dataset_preprocessing.presence_in_roi_min
+      - dataset_preprocessing.kpt_thr
+      - dataset_preprocessing.ema_alpha
+      - dataset_preprocessing.idle_active_thr
+      - dataset_preprocessing.idle_mean_speed_thr
+      - dataset_preprocessing.win_len
+      - dataset_preprocessing.win_stride
+      - dataset_preprocessing.save_overlay
+      - dataset_preprocessing.max_nan_frame_ratio
     outs:
       - artifacts/data_ingestion
+
 
   prepare_base_model:
     cmd: python src/badmintonPoseCoach/pipeline/stage_03_prepare_base_model.py
@@ -35,19 +62,19 @@ stages:
       - config/config.yaml
       - artifacts/data_ingestion
       - artifacts/prepare_base_model
-    params:
-      - training.epochs
-      - training.batch_size
-      - training.device
-      - training.lr
-      - training.step_size
-      - training.gamma
-      - training.use_amp
-    outs:
-      - artifacts/training/checkpoints/best.pkl
+#    params:
+#      - training.epochs
+#      - training.batch_size
+#      - training.device
+#      - training.lr
+#      - training.step_size
+#      - training.gamma
+#      - training.use_amp
+#    outs:
+#      - artifacts/training/checkpoints/best.pkl
 #
 #  evaluation:
-#    cmd: python src/cnnClassifier/pipeline/stage_04_model_evaluation.py
+#    cmd: python src/cnnClassifier/pipeline/stage_05_model_evaluation.py
 #    deps:
 #      - src/cnnClassifier/pipeline/stage_04_model_evaluation.py
 #      - config/config.yaml
