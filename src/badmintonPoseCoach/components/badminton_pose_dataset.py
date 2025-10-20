@@ -30,7 +30,7 @@ class BadmintonPoseDataset(Dataset):
     def __len__(self):
         return len(self.files)
 
-    def __getitem__(self, index: int) -> tuple[torch.FloatTensor, int]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
         path = self.files[index]
 
         data = np.load(path)
@@ -41,9 +41,15 @@ class BadmintonPoseDataset(Dataset):
         if seq is None:
             raise ValueError(f"Missing 'kpts' in {path}")
 
-        pose = self._to_tensor_TxKx3(seq.tolist())
+        if self.config.params_model_name == "gru":
+            pose = self._to_tensor_TxKx3(seq.tolist())
+            return self.normalize_pose_rnn(pose, meta.get("W"), meta.get("H")), self.label_to_id[label]
 
-        return self.normalize_pose(pose, 720, 1280), self.label_to_id[label]
+        elif self.config.params_model_name == "stgcn":
+            pose  = self.normalize_stgcn(seq, meta.get("W"), meta.get("H"))
+            data = np.transpose(pose, (2, 0, 1))[..., np.newaxis]
+            data = torch.from_numpy(data).float()
+            return data, self.label_to_id[label]
 
     def _discover_classes(self):
         labels = set()
@@ -82,8 +88,19 @@ class BadmintonPoseDataset(Dataset):
 
         raise ValueError("Unsupported 'seq' structure")
 
+    def from_kpts_tv3_to_stgcn_input(kpts_tv3: torch.Tensor, with_conf: bool = True) -> torch.Tensor:
+        """
+        kpts_tv3: (T, V, 3) in torch (normalized theo Dataset)
+        return: (C, T, V, M=1)  with C=3 or 2, M=1
+        """
+        if not with_conf:
+            kpts_tv3 = kpts_tv3[..., :2]
+        # (T,V,C) -> (C,T,V,1)
+        x = kpts_tv3.permute(2, 0, 1).contiguous().unsqueeze(-1)
+        return x
+
     @staticmethod
-    def normalize_pose(pose, W, H, method="skeleton"):
+    def normalize_pose_rnn(pose, W, H, method="skeleton"):
         # pose: (T,K,3)
         if method == "image":
             pose[...,0] /= W
@@ -97,3 +114,36 @@ class BadmintonPoseDataset(Dataset):
             scale = (pose[:,5,:2]-pose[:,6,:2]).norm(dim=-1, keepdim=True).clamp(min=1e-6)
             pose[...,:2] /= scale[:,None,:]
         return pose
+
+    def normalize_stgcn(self, kpts, W, H, mode="root"):
+        """
+        kpts: (T, V, 3) float32, pixel-space
+        W, H: frame width, height
+        mode: "image" | "root" | "person"
+        """
+        L_HIP, R_HIP = 11, 12
+        k = kpts.copy().astype(np.float32)
+        # 1. scale to [0,1]
+        k[..., 0] /= float(W)
+        k[..., 1] /= float(H)
+
+        if mode == "image":
+            return k
+
+        if mode == "root":
+            # center theo trung bình 2 hip
+            root = np.nanmean(k[:, [L_HIP, R_HIP], :2], axis=1, keepdims=True)  # (T,1,2)
+            k[..., :2] = k[..., :2] - root
+            return k
+
+        if mode == "person":
+            # normalize theo bbox người
+            x_min = np.nanmin(k[..., 0], axis=1, keepdims=True)
+            x_max = np.nanmax(k[..., 0], axis=1, keepdims=True)
+            y_min = np.nanmin(k[..., 1], axis=1, keepdims=True)
+            y_max = np.nanmax(k[..., 1], axis=1, keepdims=True)
+            scale = np.maximum(x_max - x_min, y_max - y_min)
+            k[..., 0:2] = (k[..., 0:2] - np.stack([x_min, y_min], axis=-1)) / np.clip(scale, 1e-6, None)
+            return k
+
+        raise ValueError(f"Unknown normalize mode: {mode}")

@@ -30,19 +30,28 @@ prepare_base_model:
   model_name: gru
   gru:
     model_name: gru
-    num_classes: 18
-    hidden: 64
-    layers: 1
-    dropout: 0.5
+    num_classes: 6
+    hidden: 150
+    layers: 3
+    dropout: 0.2
     num_joints: 17
     channel: 3
-    bidirectional: True
+    bidirectional: False
+  stgcn:
+    model_name: stgcn
+    in_channels: 3
+    num_class: 6
+    num_point: 17
+    num_person: 1
+    dropout: 0.25
+    t_kernel: 9
 
 training:
-  epochs: 40
-  batch_size: 16
+  model_name: gru
+  epochs: 50
+  batch_size: 32
   device: cuda
   lr: 0.001
   step_size: 10
-  gamma: 0.5
+  gamma: 0.9
   use_amp: True

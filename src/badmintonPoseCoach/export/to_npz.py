@@ -87,6 +87,7 @@ def save_track_unified_npz_imputed(
     valid_idx: Optional[np.ndarray] = None,
     label: Optional[str] = None,
     max_nan_frame_ratio: float = 0.5,
+    to_npz: bool = True,
 ) -> Optional[str]:
     """
     Lưu 1 file NPZ duy nhất đủ thông tin cho mọi model (RNN/ST-GCN/Transformer):
@@ -128,6 +129,9 @@ def save_track_unified_npz_imputed(
             "label": label
         }, ensure_ascii=False)
     }
+
+    if not to_npz:
+        return rec
 
     npz_path = Path(npz_path)
     npz_path.parent.mkdir(parents=True, exist_ok=True)

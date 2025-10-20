@@ -7,7 +7,7 @@ from dataclasses import dataclass, asdict
 from badmintonPoseCoach.entity.config_entity import DatasetPreprocessingConfig
 
 from badmintonPoseCoach.components.detection.yolo_pose_tracker import track_video
-from badmintonPoseCoach.components.selection.actor_selector import select_actor_once_roi
+from badmintonPoseCoach.components.selection.actor_selector import select_actor_once_roi, select_multiply_actor
 from badmintonPoseCoach.components.selection.roi import slice_by_valid_ratio
 from badmintonPoseCoach.components.visualize.overlay import overlay_video  # optional
 from badmintonPoseCoach.export.to_npz import save_track_unified_npz_imputed
@@ -123,6 +123,57 @@ class DataPreprocessing:
                 print(f"[WARN] overlay failed for {video_path}: {e}")
 
         return str(out_npz)
+
+    # ---------- core processing ----------
+    def process_one_test(self, video_path: str, out_overlay):
+        """
+        Xử lý 1 video -> lưu .npz. Trả về đường dẫn npz (str) hoặc None nếu skip.
+        """
+        # 1) tracking/pose
+        tracks, meta = track_video(
+            self.cfg.model_name, video_path,
+            conf=self.cfg.params_conf, iou=self.cfg.params_iou, imgsz=self.cfg.params_imgsz,
+            max_det=self.cfg.params_maxdet,
+            tracker_yaml="bytetrack.yaml"
+        )
+
+        # 2) chọn nhiều actors
+        params = {
+            "valid_ratio": (self.cfg.params_valid_ratio_start, self.cfg.params_valid_ratio_end),
+            "presence_in_roi_min": self.cfg.params_presence_in_roi_min,
+            "kpt_thr": self.cfg.params_kpt_thr,
+            "ema_alpha": self.cfg.params_ema_alpha,
+            "idle_active_thr": self.cfg.params_idle_active_thr,
+            "idle_mean_speed_thr": self.cfg.params_idle_mean_speed_thr,
+            "win_len": self.cfg.params_win_len,
+            "win_stride": self.cfg.params_win_stride,
+            "crop": (self.cfg.params_crop_l, self.cfg.params_crop_r, self.cfg.params_crop_t, 0.9),
+        }
+        if len(tracks) > 1:
+            chosen_ids, info, roi = select_multiply_actor(tracks, meta, params)
+        else:
+            chosen_ids = [1]
+        roi = None
+        # 3) slice theo valid_ratio (10%..90%)
+        actors_details = {}
+        for chosen_id in chosen_ids:
+            obj = tracks[chosen_id].copy()
+            obj["track_id"] = chosen_id
+            idx_valid, _, _ = slice_by_valid_ratio(obj, meta["T_total"], (self.cfg.params_valid_ratio_start, self.cfg.params_valid_ratio_end))
+            if idx_valid.size < 3:
+                print(f"[SKIP] {video_path} | not enough frames in valid window")
+                continue
+
+            # 4) save unified npz (impute NaN; skip nếu >50% NaN)
+            rec = save_track_unified_npz_imputed(
+                "", video_path, meta, obj, valid_idx=idx_valid,
+                label=None,
+                max_nan_frame_ratio=self.cfg.params_max_nan_frame_ratio,
+                to_npz= False
+            )
+            actors_details[chosen_id] = rec
+
+        return tracks, actors_details, roi
 
     def run_split(self, split: str) -> Dict[str, List[str]]:
         """

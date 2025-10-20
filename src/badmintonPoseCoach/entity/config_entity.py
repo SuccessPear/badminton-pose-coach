@@ -42,8 +42,8 @@ class PrepareBaseModelConfig:
     params_model_name: float
 
 @dataclass(frozen=True)
-class ModelConfig:
-    params_model_name: float
+class GRUModelConfig:
+    params_model_name: str
     params_num_classes: int
     params_hidden: int
     params_layers: int
@@ -53,12 +53,23 @@ class ModelConfig:
     params_bidirectional: bool
 
 @dataclass(frozen=True)
+class STGCNConfig:
+    params_model_name: str
+    params_in_channels: int
+    params_num_class: int
+    params_num_point: int
+    params_num_person: int
+    params_dropout: float
+    params_t_kernel: int
+
+@dataclass(frozen=True)
 class TrainingConfig:
     root_dir: Path
     trained_model_path: Path
     updated_base_model_path: Path
     training_data: Path
     checkpoint_dir: Path
+    params_model_name: str
     params_epochs: int
     params_batch_size: int
     params_device: str

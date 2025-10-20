@@ -73,20 +73,32 @@ class ConfigurationManager:
         )
         return prepare_base_model_config
 
-    def get_model_config(self) -> ModelConfig:
+    def get_model_config(self):
         params = None
         if self.params.prepare_base_model.model_name == "gru":
             params = self.params.prepare_base_model.gru
-        model_config = ModelConfig(
-            params_hidden=params.hidden,
-            params_model_name=params.model_name,
-            params_num_classes=params.num_classes,
-            params_layers=params.layers,
-            params_dropout=params.dropout,
-            params_num_joints=params.num_joints,
-            params_channel=params.channel,
-            params_bidirectional=params.bidirectional,
-        )
+            model_config = GRUModelConfig(
+                params_hidden=params.hidden,
+                params_model_name=params.model_name,
+                params_num_classes=params.num_classes,
+                params_layers=params.layers,
+                params_dropout=params.dropout,
+                params_num_joints=params.num_joints,
+                params_channel=params.channel,
+                params_bidirectional=params.bidirectional,
+            )
+        elif self.params.prepare_base_model.model_name == "stgcn":
+            params = self.params.prepare_base_model.stgcn
+            model_config = STGCNConfig(
+                params_model_name = params.model_name,
+                params_in_channels= params.in_channels,
+                params_num_class= params.num_class,
+                params_num_point= params.num_point,
+                params_num_person= params.num_person,
+                params_dropout= params.dropout,
+                params_t_kernel= params.t_kernel,
+            )
+
         return model_config
 
     def get_training_config(self) -> TrainingConfig:
@@ -100,6 +112,7 @@ class ConfigurationManager:
             root_dir=Path(training_config.root_dir),
             trained_model_path=Path(training_config.trained_model_path),
             updated_base_model_path=Path(prepare_base_model_config.updated_base_model_path),
+            params_model_name=params.model_name,
             training_data=Path(training_config.training_data),
             checkpoint_dir=Path(training_config.checkpoint_dir),
             params_epochs=params.epochs,

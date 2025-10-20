@@ -44,6 +44,7 @@ stages:
       - src/badmintonPoseCoach/pipeline/stage_03_prepare_base_model.py
       - config/config.yaml
     params:
+      - prepare_base_model.model_name
       - prepare_base_model.gru.model_name
       - prepare_base_model.gru.num_classes
       - prepare_base_model.gru.hidden

@@ -2,12 +2,12 @@ import torch.nn as nn
 from badmintonPoseCoach.entity.config_entity import GRUModelConfig
 import torch
 
-class GRUModel(nn.Module):
+class LSTMModel(nn.Module):
     def __init__(self, config: GRUModelConfig):
         super().__init__()
         self.config = config
 
-        self.gru = nn.GRU(
+        self.gru = nn.LSTM(
                     input_size=self.config.params_num_joints * self.config.params_channel,
                     hidden_size=self.config.params_hidden,
                     num_layers=self.config.params_layers,

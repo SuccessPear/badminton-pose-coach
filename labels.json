@@ -1,0 +1,18 @@
+{
+  "classes": [
+    "backhand_drive",
+    "backhand_net_shot",
+    "forehand_clear",
+    "forehand_drive",
+    "forehand_lift",
+    "forehand_net_shot"
+  ],
+  "label_to_id": {
+    "backhand_drive": 0,
+    "backhand_net_shot": 1,
+    "forehand_clear": 2,
+    "forehand_drive": 3,
+    "forehand_lift": 4,
+    "forehand_net_shot": 5
+  }
+}

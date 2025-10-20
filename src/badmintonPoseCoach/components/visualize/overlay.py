@@ -23,6 +23,12 @@ def draw_skeleton(frame: np.ndarray, kpts_px: np.ndarray,
         if s >= score_thr:
             cv2.circle(frame, (int(x), int(y)), radius, color, -1)
 
+def draw_bbox_and_label(frame, bbox, color, label):
+    (x1, y1, x2, y2) = bbox
+    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness=2)
+
+    cv2.putText(frame, str(label), (int(x1)-10, int(y1)-10), cv2.FONT_HERSHEY_SIMPLEX,fontScale=2, color=color,thickness=4)
+
 def overlay_video(video_path: str,
                   out_path: str,
                   tracks: Dict[int, Dict[str, np.ndarray]],
@@ -33,15 +39,16 @@ def overlay_video(video_path: str,
                   W: int | None = None,
                   H: int | None = None,
                   valid_ratio: tuple[float, float] = (0.10, 0.90),
-                  roi: Tuple[int,int,int,int] | None = None) -> None:
+                  roi: Tuple[int,int,int,int] | None = None,
+                  labels: Dict[int, str] = None) -> None:
     """
     Vẽ overlay: shade head/tail + ngoài ROI, tô xanh người được chọn, đỏ những người khác.
     """
     # gom keypoint theo frame
-    frame_map: Dict[int, Dict[int, np.ndarray]] = {}
+    frame_map: Dict[int, (Dict[int, np.ndarray], np.ndarray)] = {}
     for tid, obj in tracks.items():
-        for t, kp in zip(obj["t"], obj["kpt"]):
-            frame_map.setdefault(int(t), {})[int(tid)] = kp
+        for t, kp, bboxes in zip(obj["t"], obj["kpt"], obj["bbox"]):
+            frame_map.setdefault(int(t), {})[int(tid)] = (kp, bboxes)
 
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
@@ -86,10 +93,13 @@ def overlay_video(video_path: str,
         cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 0), 2)
 
         # draw skeletons
-        actors = frame_map.get(t, {})
-        for tid, kp in actors.items():
+        actors = frame_map.get(t, ({}, None))
+        for tid, (kp, bbox) in actors.items():
             color = (0, 255, 0) if (chosen_tid is not None and tid == chosen_tid) else (0, 0, 255)
             draw_skeleton(frame, kp, color, score_thr)
+            if labels.get(tid) is not None:
+                draw_bbox_and_label(frame, bbox, color, labels.get(tid))
+
 
         cv2.putText(frame, f"t={t} chosen_id={chosen_tid}", (10, 28),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)

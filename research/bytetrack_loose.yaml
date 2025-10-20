@@ -1,0 +1,8 @@
+# bytetrack_loose.yaml
+tracker_type: bytetrack
+track_high_thresh: 0.15     # mở rộng nhận diện track
+track_low_thresh: 0.05
+new_track_thresh: 0.15
+track_buffer: 60            # giữ ID lâu hơn khi trượt tạm
+match_thresh: 0.8
+frame_rate: 15              # đặt đúng fps video của bạn

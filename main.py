@@ -21,8 +21,8 @@ def main():
     #run_stage("Data Ingestion", DataIngestionTrainingPipeline)
     #run_stage("Dataset Preprocessing stage", DatasetPreprocessingPipeline)
 
-    #run_stage("Prepare Base Model", PrepareBaseModelPipeline)
-    run_stage("Training Model", TrainingModelPipeline)
+    run_stage("Prepare Base Model", PrepareBaseModelPipeline)
+    #run_stage("Training Model", TrainingModelPipeline)
 
 if __name__ == "__main__":
     mp.freeze_support()
